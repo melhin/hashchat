@@ -27,7 +27,6 @@ class User(AbstractBaseUser, AbstractBase):
         max_length=255,
         unique=True,
     )
-    date_of_birth = models.DateField()
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     auth_method = models.CharField(
@@ -63,3 +62,4 @@ class User(AbstractBaseUser, AbstractBase):
 class UserProfile(AbstractBase):
     user = models.OneToOneField('core.User', related_name='profile', on_delete=models.CASCADE)
     blocked = models.BooleanField(default=False)
+    company = models.CharField(max_length=50)
