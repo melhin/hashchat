@@ -1,0 +1,175 @@
+  
+{% extends 'base.html' %}
+{% block head %}
+
+   <style type="text/css">
+      span.announcement {font-style: italic; color: #b7b7b7}
+      span.newmessage {font-style: bold; color:  #abebc6}
+      #bodybox {
+      margin: auto;
+      max-width: 550px;
+      font: 15px arial, sans-serif;
+      background-color: grey;
+      border-style: solid;
+      border-width: 1px;
+      padding-top: 20px;
+      padding-bottom: 25px;
+      padding-right: 25px;
+      padding-left: 25px;
+      box-shadow: 5px 5px 5px grey;
+      border-radius: 15px;
+      }
+      #chatborder {
+      border-style: solid;
+      background-color: #f6f9f6;
+      border-width: 3px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-left: 20px;
+      margin-right: 20px;
+      padding-top: 10px;
+      padding-bottom: 15px;
+      padding-right: 20px;
+      padding-left: 15px;
+      border-radius: 15px;
+      }
+   </style>
+{% endblock head %}
+{% block content %}
+      <div id='bodybox'>
+         <div id='chatborder'>
+            <h1>WebSocket Chat</h1>
+            <form name="chat-info" id="chat-info" action="#">
+                <table>
+                    <tr>
+                        <td>Enter hashtags you want to subscribe to</td>
+                        <td>
+                            <a href={% url 'core:logout' %} class="btn btn-primary btn-block btn-small">Logout</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" id="channel" name="channel" value="channel" autocomplete="off"/></td>
+                        <td><button type="submit" id="channels" class="btn btn-primary btn-small">Connect</button></td>
+                    </tr>
+                </table>
+            </form>
+            <ul id='messages' style="height: 60vh; overflow: scroll">
+            </ul>
+            <form id="comment" action="#"  style="height: 20vh">
+                <table>
+                    <tr>
+                        <td>
+                            <input type="text" id="messageText" autocomplete="off"/>
+                        </td>
+                        <td>
+                            <button  class="btn btn-primary btn-small">Send</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+         </div>
+      </div>
+      <script>
+         let ws = null;
+         // Display logging information in the document.
+         function log(s) {
+             console.log(s);
+         }
+         function ws_connect(e) {
+             e.preventDefault();
+             let messages = document.getElementById('messages');
+             messages.innerHTML = '';
+             if (ws != null && ws.readyState == 1) {
+               ws.close();
+             }
+         
+             let username = document.getElementById('username').value.toString();
+             let channel = document.getElementById('channel').value.toString();
+             let ws_protocol = "wss://";
+             if (window.location.protocol == 'http:') {
+                 ws_protocol =  "ws://";
+             }
+             ws = new WebSocket(ws_protocol + window.location.host + "/chat/"+ channel +"?username=" + username);
+         
+             // Listen for the connection open event then call the sendMessage function
+             ws.onopen = function (e) {
+                 document.getElementById("connect").disabled = true; 
+                 log("Connected");
+             };
+         
+             // Listen for the close connection event
+             ws.onclose = function (e) {
+                 log("Disconnected " + e.reason);
+                 document.getElementById("connect").disabled = false; 
+             };
+         
+             // Listen for connection errors
+             ws.onerror = function (e) {
+                 log("Error " + e.reason);
+             };
+         
+             ws.onmessage = function(e) {
+                 let messages = document.getElementById('messages');
+                 let message = document.createElement('li');
+                 let data = JSON.parse(e.data);
+                 let message_content = null;
+                 log(data)
+         
+                 if (data['type'] == 'message') {
+                     message_content = document.createElement('span');
+                     message_content.appendChild(
+                         document.createTextNode(data['sender']+": "+data['message'])
+                     );
+                     message_content.setAttribute('class', 'comment')
+                 }
+                 if (data['type'] == 'new_message') {
+                     message_content = document.createElement('span');
+                     message_content.appendChild(
+                         document.createTextNode("New Messages")
+                     );
+                     message_content.setAttribute('class', 'newmessage');
+                 }
+                 if (data['type'] == 'announcement') {
+                     message_content = document.createElement('span');
+                     message_content.appendChild(document.createTextNode(data['message']));
+                     message_content.setAttribute('class', 'announcement');
+                 }
+                 message.appendChild(message_content);
+                 messages.appendChild(message);
+                 messages.scrollTop = messages.scrollHeight;
+             };
+         }
+         
+         function sendMessage(e) {
+             let input = document.getElementById("messageText");
+             let msg = input.value.trim();
+         
+             if (ws != null && msg.length) {
+                 if (ws.readyState == 3) {
+                     ws_connect(e);
+                     log("Reconnect");
+                 }
+         
+                 if (ws.readyState == 1) {
+                     let data = {"message": msg};
+                     ws.send(JSON.stringify(data));
+
+                     input.value = '';
+                     log("Message sent");
+                 }
+             }
+             if (ws == null && msg.length) {
+                 log("Connection to room is required");
+                 console.log("Connection to room is required");
+             }
+             if (!msg.length) {
+                 log("Empty message");
+             }
+             e.preventDefault()
+         }
+         const chat_info = document.getElementById('chat-info');
+         const comment = document.getElementById('comment');
+         chat_info.addEventListener('submit', ws_connect);
+         comment.addEventListener('submit', sendMessage);
+      </script>
+{% endblock content %}

@@ -18,8 +18,8 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 urlpatterns = [
+    path('', include('core.urls', namespace='core')),
     path('admin/', admin.site.urls),
     path('login/', TemplateView.as_view(template_name="accounts/login.html"), name='login'),
     path('register/', TemplateView.as_view(template_name="accounts/register.html"), name='register'),
-    path('core/', include('core.urls', namespace='core')),
 ]
