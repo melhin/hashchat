@@ -42,18 +42,18 @@
             <form name="chat-info" id="chat-info" action="#">
                 <table>
                     <tr>
-                        <td>Enter hashtags you want to subscribe to</td>
+                        <td>Enter group you want to join</td>
                         <td>
                             <a href={% url 'core:logout' %} class="btn btn-primary btn-block btn-small">Logout</a>
                         </td>
                     </tr>
                     <tr>
                         <td><input type="text" id="channel" name="channel" value="channel" autocomplete="off"/></td>
-                        <td><button type="submit" id="channels" class="btn btn-primary btn-small">Connect</button></td>
+                        <td><button type="submit" id="connect" class="btn btn-primary btn-small">Connect</button></td>
                     </tr>
                 </table>
             </form>
-            <ul id='messages' style="height: 60vh; overflow: scroll">
+            <ul id='messages' style="height: 40vh; overflow: scroll">
             </ul>
             <form id="comment" action="#"  style="height: 20vh">
                 <table>
@@ -83,13 +83,12 @@
                ws.close();
              }
          
-             let username = document.getElementById('username').value.toString();
              let channel = document.getElementById('channel').value.toString();
              let ws_protocol = "wss://";
              if (window.location.protocol == 'http:') {
                  ws_protocol =  "ws://";
              }
-             ws = new WebSocket(ws_protocol + window.location.host + "/chat/"+ channel +"?username=" + username);
+             ws = new WebSocket(ws_protocol + window.location.host + "/chat/"+ channel);
          
              // Listen for the connection open event then call the sendMessage function
              ws.onopen = function (e) {
@@ -117,8 +116,10 @@
          
                  if (data['type'] == 'message') {
                      message_content = document.createElement('span');
+                     var userEmail = "{{ user.email }}"
+                     var sender = (userEmail == data['sender'] ? 'You' : data['sender']);
                      message_content.appendChild(
-                         document.createTextNode(data['sender']+": "+data['message'])
+                         document.createTextNode(sender+": "+data['message'])
                      );
                      message_content.setAttribute('class', 'comment')
                  }
@@ -130,8 +131,13 @@
                      message_content.setAttribute('class', 'newmessage');
                  }
                  if (data['type'] == 'announcement') {
+                     console.log(data)
+                     var userEmail = "{{ user.email }}"
+                     var sender = (userEmail == data['sender'] ? 'You' : data['sender']);
                      message_content = document.createElement('span');
-                     message_content.appendChild(document.createTextNode(data['message']));
+                     message_content.appendChild(
+                         document.createTextNode(sender+": joined chat")
+                     );
                      message_content.setAttribute('class', 'announcement');
                  }
                  message.appendChild(message_content);

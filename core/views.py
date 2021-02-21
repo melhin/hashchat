@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from core.models import User, UserProfile
 from core.serializers import LoginSerializer, RegistrationSerializer
 from django.urls import reverse
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 
 class RegisterView(CreateAPIView):

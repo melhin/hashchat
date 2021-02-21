@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'channels',
 
     'core',
 ]
@@ -127,3 +128,12 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 LOGIN_URL = '/login/'
+ASGI_APPLICATION = 'hashchat.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
