@@ -16,10 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('', include('core.urls', namespace='core')),
     path('admin/', admin.site.urls),
     path('login/', TemplateView.as_view(template_name="accounts/login.html"), name='login'),
     path('register/', TemplateView.as_view(template_name="accounts/register.html"), name='register'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
