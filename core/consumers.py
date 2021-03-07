@@ -1,5 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from core.apps import CoreConfig as tr
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -46,6 +47,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from room group
     async def message(self, event):
+        event['message'] = tr.translator.translate(
+            'en', 'de', event['message'])[0]
 
         await self.send(text_data=json.dumps(event))
 
