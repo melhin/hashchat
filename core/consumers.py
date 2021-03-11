@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -66,12 +67,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from room group
     async def message(self, event):
+        message_event = deepcopy(event)
         lang = await self.get_language(self.scope["user"])
-        if event['language'] != lang:
-            event['message'] = tr.translator.translate(
+        if message_event['language'] != lang:
+            message_event['message'] = tr.translator.translate(
                 event['language'], lang, event['message'])[0]
 
-        await self.send(text_data=json.dumps(event))
+        await self.send(text_data=json.dumps(message_event))
 
     # Receive message from room group
     async def announcement(self, event):
