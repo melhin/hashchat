@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 
 from core.managers import UserManager
-from core.choices import AuthentiationMethod
+from core.choices import AuthentiationMethod, LanguageChoices
 
 
 class AbstractBase(models.Model):
@@ -63,3 +63,8 @@ class UserProfile(AbstractBase):
     user = models.OneToOneField('core.User', related_name='profile', on_delete=models.CASCADE)
     blocked = models.BooleanField(default=False)
     company = models.CharField(max_length=50)
+    language_code = models.CharField(
+        max_length=3,
+        choices=[(lang, lang.value) for lang in LanguageChoices],
+        default=LanguageChoices.EN.value,
+    )

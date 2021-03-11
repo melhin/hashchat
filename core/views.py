@@ -1,6 +1,9 @@
+from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -8,9 +11,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.models import User, UserProfile
-from core.serializers import LoginSerializer, RegistrationSerializer
-from django.urls import reverse
-from channels.generic.websocket import AsyncWebsocketConsumer
+from core.serializers import (LanguageSelectorSerializer, LoginSerializer,
+                              RegistrationSerializer)
 
 
 class RegisterView(CreateAPIView):
@@ -51,6 +53,18 @@ class LogoutView(APIView):
             return redirect(reverse('login'))
         else:
             return Response({'login': False}, status=status.HTTP_403_FORBIDDEN)
+
+
+class LanguageSelectorView(APIView, LoginRequiredMixin):
+
+    @csrf_exempt
+    def post(self, request, *args, **kwargs):
+        serializer = LanguageSelectorSerializer(data=request.data)
+        user = self.request.user
+        serializer.is_valid(raise_exception=True)
+        user.profile.language_code = serializer.data['language_code']
+        user.profile.save()
+        return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class ChatView(LoginRequiredMixin, TemplateView):

@@ -34,25 +34,43 @@
       border-radius: 15px;
       }
    </style>
+   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 {% endblock head %}
 {% block content %}
       <div id='bodybox'>
          <div id='chatborder'>
             <h1>WebSocket Chat</h1>
-            <form name="chat-info" id="chat-info" action="#">
                 <table>
+                    <form name="chat-info" id="chat-info" action="#">
                     <tr>
                         <td>Enter group you want to join</td>
                         <td>
                             <a href={% url 'core:logout' %} class="btn btn-primary btn-block btn-small">Logout</a>
+                        </td>
+                        <td>
                         </td>
                     </tr>
                     <tr>
                         <td><input type="text" id="channel" name="channel" value="channel" autocomplete="off"/></td>
                         <td><button type="submit" id="connect" class="btn btn-primary btn-small">Connect</button></td>
                     </tr>
+                    </form>
+
+                    <tr>
+                    <form id="language" action='#'>
+                        <td>
+                        <select id="language_code" name="language_code" value="language_code"> 
+                        <option value="">Please the language</option>
+                        <option value="en">EN</option>
+                        <option value="de">DE</option>
+                        </select>
+                        </td>
+                        <td>
+                        <input type="submit" class="btn btn-primary btn-small" value="Submit">
+                        </td>
+                    </form>
+                    </tr>
                 </table>
-            </form>
             <ul id='messages' style="height: 40vh; overflow: scroll">
             </ul>
             <form id="comment" action="#"  style="height: 20vh">
@@ -173,9 +191,28 @@
              }
              e.preventDefault()
          }
+         function sendLanguage(e){
+             e.preventDefault()
+             let input = document.getElementById("language_code");
+                $.ajax({
+                           type: "POST",
+                           url: "/core/language/",
+                           data: {"language_code": input.value},
+                           success: function (newEnd) {
+                               alert("Called")
+                           },
+                           error: function () {
+                               alert("There was an error")
+                           }
+                       });
+             alert('Im called '+ input.value.trim())
+         }
+
          const chat_info = document.getElementById('chat-info');
          const comment = document.getElementById('comment');
+         const language = document.getElementById('language');
          chat_info.addEventListener('submit', ws_connect);
          comment.addEventListener('submit', sendMessage);
+         language.addEventListener('submit', sendLanguage);
       </script>
 {% endblock content %}

@@ -8,4 +8,7 @@ urlpatterns = [
     path('core/register/', views.RegisterView.as_view(), name='register'),
     path('core/login/', views.LoginView.as_view(), name='login'),
     path('core/logout/', views.LogoutView.as_view(), name='logout'),
+    path('core/language/', views.LanguageSelectorView.as_view(),
+         name='language'),
+
 ]
