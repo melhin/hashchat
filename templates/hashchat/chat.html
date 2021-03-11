@@ -34,25 +34,39 @@
       border-radius: 15px;
       }
    </style>
+   <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 {% endblock head %}
 {% block content %}
       <div id='bodybox'>
          <div id='chatborder'>
             <h1>WebSocket Chat</h1>
-            <form name="chat-info" id="chat-info" action="#">
                 <table>
+                    <form name="chat-info" id="chat-info" action="#">
                     <tr>
                         <td>Enter group you want to join</td>
                         <td>
                             <a href={% url 'core:logout' %} class="btn btn-primary btn-block btn-small">Logout</a>
+                        </td>
+                        <td>
                         </td>
                     </tr>
                     <tr>
                         <td><input type="text" id="channel" name="channel" value="channel" autocomplete="off"/></td>
                         <td><button type="submit" id="connect" class="btn btn-primary btn-small">Connect</button></td>
                     </tr>
+                    </form>
+
+                    <tr>
+                        <td>
+                        <select id="language_code_change" name="language_code" value="language_code"> 
+                        <option id='en' value="en" selected>EN</option>
+                        <option id='de' value="de">DE</option>
+                        </select>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
                 </table>
-            </form>
             <ul id='messages' style="height: 40vh; overflow: scroll">
             </ul>
             <form id="comment" action="#"  style="height: 20vh">
@@ -173,9 +187,38 @@
              }
              e.preventDefault()
          }
+         function sendLanguage(e){
+             e.preventDefault()
+             let input = document.getElementById("language_code_change");
+             let msg = input.value.trim();
+         
+             alert('Language selected '+msg);
+             if (ws != null && msg.length) {
+                 if (ws.readyState == 3) {
+                     ws_connect(e);
+                     log("Reconnect");
+                 }
+         
+                 if (ws.readyState == 1) {
+                     let data = {"language": msg};
+                     ws.send(JSON.stringify(data));
+
+                 }
+             }
+             if (ws == null && msg.length) {
+                 log("Connection to room is required");
+                 console.log("Connection to room is required");
+             }
+             e.preventDefault()
+         }
+
          const chat_info = document.getElementById('chat-info');
          const comment = document.getElementById('comment');
+         //const language = document.getElementById('language');
+         const select = document.getElementById('language_code_change')
+         select.addEventListener('change',sendLanguage);
          chat_info.addEventListener('submit', ws_connect);
          comment.addEventListener('submit', sendMessage);
+         //language.addEventListener('submit', sendLanguage);
       </script>
 {% endblock content %}
