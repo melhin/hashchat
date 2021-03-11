@@ -55,17 +55,5 @@ class LogoutView(APIView):
             return Response({'login': False}, status=status.HTTP_403_FORBIDDEN)
 
 
-class LanguageSelectorView(APIView, LoginRequiredMixin):
-
-    @csrf_exempt
-    def post(self, request, *args, **kwargs):
-        serializer = LanguageSelectorSerializer(data=request.data)
-        user = self.request.user
-        serializer.is_valid(raise_exception=True)
-        user.profile.language_code = serializer.data['language_code']
-        user.profile.save()
-        return Response({'success': True}, status=status.HTTP_200_OK)
-
-
 class ChatView(LoginRequiredMixin, TemplateView):
     template_name = "hashchat/chat.html"

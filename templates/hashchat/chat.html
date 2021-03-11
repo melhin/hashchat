@@ -57,18 +57,14 @@
                     </form>
 
                     <tr>
-                    <form id="language" action='#'>
                         <td>
-                        <select id="language_code" name="language_code" value="language_code"> 
-                        <option value="">Please the language</option>
-                        <option value="en">EN</option>
-                        <option value="de">DE</option>
+                        <select id="language_code_change" name="language_code" value="language_code"> 
+                        <option id='en' value="en" selected>EN</option>
+                        <option id='de' value="de">DE</option>
                         </select>
                         </td>
                         <td>
-                        <input type="submit" class="btn btn-primary btn-small" value="Submit">
                         </td>
-                    </form>
                     </tr>
                 </table>
             <ul id='messages' style="height: 40vh; overflow: scroll">
@@ -193,26 +189,36 @@
          }
          function sendLanguage(e){
              e.preventDefault()
-             let input = document.getElementById("language_code");
-                $.ajax({
-                           type: "POST",
-                           url: "/core/language/",
-                           data: {"language_code": input.value},
-                           success: function (newEnd) {
-                               alert("Called")
-                           },
-                           error: function () {
-                               alert("There was an error")
-                           }
-                       });
-             alert('Im called '+ input.value.trim())
+             let input = document.getElementById("language_code_change");
+             let msg = input.value.trim();
+         
+             alert('Language selected '+msg);
+             if (ws != null && msg.length) {
+                 if (ws.readyState == 3) {
+                     ws_connect(e);
+                     log("Reconnect");
+                 }
+         
+                 if (ws.readyState == 1) {
+                     let data = {"language": msg};
+                     ws.send(JSON.stringify(data));
+
+                 }
+             }
+             if (ws == null && msg.length) {
+                 log("Connection to room is required");
+                 console.log("Connection to room is required");
+             }
+             e.preventDefault()
          }
 
          const chat_info = document.getElementById('chat-info');
          const comment = document.getElementById('comment');
-         const language = document.getElementById('language');
+         //const language = document.getElementById('language');
+         const select = document.getElementById('language_code_change')
+         select.addEventListener('change',sendLanguage);
          chat_info.addEventListener('submit', ws_connect);
          comment.addEventListener('submit', sendMessage);
-         language.addEventListener('submit', sendLanguage);
+         //language.addEventListener('submit', sendLanguage);
       </script>
 {% endblock content %}

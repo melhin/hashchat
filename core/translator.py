@@ -9,6 +9,7 @@ class Translator():
         self.models = {}
         self.models_dir = settings.MODEL_PATH
         self.load_model('en', 'de')
+        self.load_model('de', 'en')
 
     def get_supported_langs(self):
         routes = [x.split('-')[-2:] for x in os.listdir(self.models_dir)]

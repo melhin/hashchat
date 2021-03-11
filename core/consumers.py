@@ -1,5 +1,8 @@
 import json
+
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+
 from core.apps import CoreConfig as tr
 
 
@@ -21,6 +24,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'sender':  self.scope["user"].email,
             }
         )
+        await self.change_language(
+                self.scope['user'], 'en')
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -30,25 +35,41 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+    @sync_to_async
+    def change_language(self, user, language_code):
+        user.profile.language_code = language_code
+        user.profile.save()
+
+    @sync_to_async
+    def get_language(self, user):
+        return user.profile.language_code
+
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        if text_data_json.get('language'):
+            await self.change_language(
+                self.scope['user'], text_data_json['language'])
 
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'message',
-                'sender':  self.scope["user"].email,
-                'message': message
-            }
-        )
+        else:
+            message = text_data_json['message']
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'message',
+                    'sender':  self.scope["user"].email,
+                    'message': message,
+                    'language': await self.get_language(self.scope["user"]),
+                }
+            )
 
     # Receive message from room group
     async def message(self, event):
-        event['message'] = tr.translator.translate(
-            'en', 'de', event['message'])[0]
+        lang = await self.get_language(self.scope["user"])
+        if event['language'] != lang:
+            event['message'] = tr.translator.translate(
+                event['language'], lang, event['message'])[0]
 
         await self.send(text_data=json.dumps(event))
 
