@@ -15,7 +15,7 @@ EDIT 1:
 Added a sample implementation for on the fly language translation using an ML model from huggingface
 For demonstration I just have a EN-DE translation
 
-Before running the app yu need to download the models
+Before running the app you need to download the models
 ```
 ./manage.py download_language_models --source=de --target=en
 ./manage.py download_language_models --source=en --target=de
@@ -25,3 +25,4 @@ Then runserver
 ```
 ./manage.py runserver
 ```
+The entire docker-compose for the language support will be done later
